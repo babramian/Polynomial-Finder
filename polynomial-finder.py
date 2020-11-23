@@ -11,43 +11,79 @@ class interpolater():
     
     def divdif_table(self):
         N = len(self.dt[0])
+        limit = N-1
+        difference = 1
+
+        # Chose 2 to N+1 so the calculations don't effect first row (x) and second row (f[x]) in the datatable
+        for i in range(2, N+1):
+            new_row = []
+            for j in range(N):
+                if j < limit:
+                    new_row.append((self.dt[i-1][j+1] - self.dt[i-1][j])/(self.dt[0][j+difference] - self.dt[0][j]))
+                else:
+                    new_row.append(None)
+
+            self.dt.append(new_row)
+            difference += 1
+            limit -= 1
+        
+        return self.dt
+    
+
+    def print_div_table(self):
+        N = len(self.dt[0])
+
+        print('x', end='\t')
+        comma = ','
+        for i in range(N):
+            print(f'f[{i*comma}]', end='\t')
+        print()
+
+        for i in range(N):
+            for j in range(N+1):
+                if self.dt[j][i] == None:
+                    pass
+                else:
+                    print(f'{"{:.4f}".format(self.dt[j][i])}', end='\t')
+            print()
+
+
 
 
 
 
 def get_file(filename):
-        # asks for file name
-        equ_list = []
-        with open(filename, 'r') as file:
-            count = 0
-            for line in file:
-                count += 1
-                if count > 2:
-                    print("Please run the program with a proper set of values.")
-                    quit()
+    # asks for file name
+    equ_list = []
+    with open(filename, 'r') as file:
+        count = 0
+        for line in file:
+            count += 1
+            if count > 2:
+                print("Please run the program with a proper set of values. (Too many lines provided)")
+                quit()
+            number_strings = line.split() # Split the line on runs of whitespace
+            numbers = [float(n) for n in number_strings] # Convert to integers
+            equ_list.append(numbers) # Add the "row" to your list.
+            
+    
+    # Removes empty lists (caused by empty lines)
+    equ_list = [x for x in equ_list if x!=[]]
+    # Checks to make sure the number x = number of f[x]
+    if len(equ_list[0]) != len(equ_list[1]):
+        print("Please run the program with a proper set of values. (Number of x and f[x] values mismatching)")
+        quit()
+    
+    return equ_list
 
-                number_strings = line.split() # Split the line on runs of whitespace
-                numbers = [float(n) for n in number_strings] # Convert to integers
-                equ_list.append(numbers) # Add the "row" to your list.
 
-                
-        
-        # Removes empty lists (caused by empty lines)
-        equ_list = [x for x in equ_list if x!=[]]
-
-        # Checks to make sure the number x = number of f[x]
-        if len(equ_list[0]) != len(equ_list[1]):
-            print("Please run the program with a proper set of values.")
-            quit()
-        
-
-        return np.array(equ_list, dtype=float)
 
 
 def main():
-    data = get_file('values.txt')
-    print(data)
-    #buffer = interpolater(data)
+    buffer = interpolater(get_file('values.txt'))
+    div_table = buffer.divdif_table()
+    buffer.print_div_table()
+
 
 
 if __name__ == "__main__":
